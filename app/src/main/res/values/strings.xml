@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Movie Tracker</string>
+    <string name="watching">Watching</string>
+    <string name="want_to_watch">Want to Watch</string>
+    <string name="watched">Watched</string>
 </resources>

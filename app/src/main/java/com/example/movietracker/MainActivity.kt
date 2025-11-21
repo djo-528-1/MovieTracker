@@ -1,5 +1,6 @@
 package com.example.movietracker
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,15 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.movietracker.ui.theme.MovieTrackerTheme
 import kotlinx.coroutines.launch
 
-class MainViewModel : ViewModel()
+class MainViewModel(application: Application) : AndroidViewModel(application)
 {
-    val sections = listOf("Watching", "Want to Watch", "Watched")
+    private val context = getApplication<Application>().applicationContext
+    val sections = listOf(context.getString(R.string.watching), context.getString(R.string.want_to_watch), context.getString(R.string.watched))
 }
 
 class MainActivity : ComponentActivity() {
@@ -44,14 +45,17 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MovieTrackerScreen(viewModel: MainViewModel = viewModel()){
+fun MovieTrackerScreen(){
+    val viewModel: MainViewModel = viewModel()
     val pagerState = rememberPagerState(pageCount = {viewModel.sections.size})
     val coroutineScope = rememberCoroutineScope()
     val selectedIndex by remember {derivedStateOf {pagerState.currentPage}}
 
     Column(modifier = Modifier.fillMaxSize()){
         SingleChoiceSegmentedButtonRow(
-            modifier = Modifier.fillMaxWidth().padding(10.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
         ){
             viewModel.sections.forEachIndexed { index, label ->
                 SegmentedButton(
@@ -71,7 +75,9 @@ fun MovieTrackerScreen(viewModel: MainViewModel = viewModel()){
 
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxSize().weight(1f)
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
         ){
             page -> SectionContent(title = viewModel.sections[page])
         }
