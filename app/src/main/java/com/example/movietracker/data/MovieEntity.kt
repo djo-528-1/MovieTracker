@@ -9,5 +9,6 @@ data class MovieEntity(
     val id: Int = 0,
     val title: String,
     val year: String?,
-    val category: String // Watching, Want to Watch, Watched
+    val category: String, // Watching, Want to Watch, Watched
+    val addedDate: Long = System.currentTimeMillis()
 )

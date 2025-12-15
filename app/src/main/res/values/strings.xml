@@ -3,4 +3,8 @@
     <string name="watching">Watching</string>
     <string name="want_to_watch">Want to Watch</string>
     <string name="watched">Watched</string>
+    <string name="sort_title_asc">Name (A-Z)</string>
+    <string name="sort_title_desc">Name (Z-A)</string>
+    <string name="sort_date_asc">Date (Old First)</string>
+    <string name="sort_date_desc">Date (New First)</string>
 </resources>
