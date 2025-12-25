@@ -7,6 +7,8 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.example.movietracker.data.MovieDB
 import com.example.movietracker.data.MovieEntity
+import com.example.movietracker.data.MovieRepository
+import com.example.movietracker.data.MovieSearchResult
 import com.example.movietracker.utils.AppSettingsManager
 import com.example.movietracker.utils.AppTab
 import com.example.movietracker.utils.SortOrder
@@ -19,7 +21,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+data class AddScreenState(
+    val searchQuery: String = "",
+    val searchResult: List<MovieSearchResult> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModel(application: Application) : AndroidViewModel(application)
@@ -32,6 +42,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application)
 
     private val database = MovieDB.getDB(application)
     private val movieDAO = database.movieDAO()
+    private val movieRepository = MovieRepository()
+
+    private val _addScreenState = MutableStateFlow(AddScreenState())
+    val addScreenState: StateFlow<AddScreenState> = _addScreenState.asStateFlow()
 
     val moviesBySection: StateFlow<Map<String, List<MovieEntity>>> =
         _sortOrder.flatMapLatest { currentSortOrder ->
@@ -53,6 +67,39 @@ class MainViewModel(application: Application) : AndroidViewModel(application)
         val queryBuilder = StringBuilder("SELECT * FROM movies WHERE category = ? ORDER BY ")
         queryBuilder.append(sortOrder.sqlRepresentation)
         return SimpleSQLiteQuery(queryBuilder.toString(), arrayOf(category))
+    }
+
+    fun searchMovies(query: String)
+    {
+        if (query.isBlank())
+        {
+            _addScreenState.update {it.copy(searchQuery = query, searchResult = emptyList(), error = null)}
+            return
+        }
+
+        _addScreenState.update {it.copy(searchQuery = query, isLoading = true, error = null)}
+        viewModelScope.launch {
+            try
+            {
+                val result = movieRepository.searchMovies(query)
+                _addScreenState.update {it.copy(searchResult = result, isLoading = false)}
+            }
+            catch (e: Exception)
+            {
+                _addScreenState.update {it.copy(isLoading = false, error = e.message)}
+            }
+        }
+    }
+
+    fun addMovieFromSearch(result: MovieSearchResult, category: String)
+    {
+        val newMovie = MovieEntity(
+            title = result.title,
+            year = result.releaseDate?.take(4),
+            category = category,
+            posterPath = result.posterPath
+        )
+        addMovie(newMovie)
     }
 
     fun updateSortOrder(newSortOrder: SortOrder)

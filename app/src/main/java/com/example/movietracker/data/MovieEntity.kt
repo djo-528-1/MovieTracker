@@ -10,5 +10,6 @@ data class MovieEntity(
     val title: String,
     val year: String?,
     val category: String, // Watching, Want to Watch, Watched
+    val posterPath: String?,
     val addedDate: Long = System.currentTimeMillis()
 )

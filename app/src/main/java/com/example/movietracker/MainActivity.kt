@@ -18,6 +18,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +29,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.movietracker.ui.theme.MovieTrackerTheme
 import com.example.movietracker.data.MovieEntity
 import com.example.movietracker.ui.screen.AddMovieScreen
@@ -175,10 +179,24 @@ fun MovieItem(movie: MovieEntity, viewModel: MainViewModel)
         modifier = Modifier.fillMaxSize().padding(vertical = 4.dp)
     ){
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
             verticalAlignment = Alignment.CenterVertically
         ){
-            Column(modifier = Modifier.padding(16.dp).weight(1f)) {
+            Spacer(modifier = Modifier.width(10.dp))
+
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data("https://image.tmdb.org/t/p/w185${movie.posterPath}")
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Movie poster",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(70.dp)
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(text = movie.title, style = MaterialTheme.typography.headlineSmall)
                 movie.year?.let {
                     Text(text = "Year: $it", style = MaterialTheme.typography.bodySmall)
